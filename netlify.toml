@@ -13,12 +13,12 @@
 
 [[redirects]]
   from = "/pokemon-rosso"
-  to = "/pokemon-rosso/index.html"
+  to = "/pokemon-rosso.html"
   status = 200
 
 [[redirects]]
   from = "/pokemon-rosso/*"
-  to = "/pokemon-rosso/index.html"
+  to = "/pokemon-rosso.html"
   status = 200
 
 [functions]
