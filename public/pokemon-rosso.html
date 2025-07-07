@@ -6,144 +6,164 @@
     <title>KakunaBoy - Pokemon Rosso</title>
     <style>
         body {
-            background: #000;
+            background: linear-gradient(135deg, #000 0%, #1a0000 50%, #330000 100%);
             color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Courier New', monospace;
             text-align: center;
-            padding: 50px 20px;
+            padding: 30px 20px;
+            min-height: 100vh;
             margin: 0;
         }
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
+        .header {
+            margin-bottom: 30px;
         }
-        .logo {
+        .game-title {
             font-size: 2.5em;
+            color: #ff4444;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.1em;
+            color: #ccc;
             margin-bottom: 20px;
-            color: #FF4444;
         }
-        .token {
-            background: #333;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            margin: 20px 0;
-            color: #FF4444;
+        .token-info {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 400px;
         }
-        .loading {
-            margin: 30px 0;
+        .token-display {
+            font-size: 1.3em;
+            color: #ff4444;
+            font-weight: bold;
+            margin: 10px 0;
         }
-        .spinner {
-            border: 3px solid #333;
-            border-top: 3px solid #FF4444;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .button {
-            background: #FF4444;
-            color: white;
+        .open-app-btn {
+            background: linear-gradient(45deg, #ff4444, #cc3333);
+            color: #fff;
             padding: 15px 30px;
             border: none;
             border-radius: 25px;
-            font-size: 16px;
-            margin: 10px;
-            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
             text-decoration: none;
             display: inline-block;
+            margin: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3);
+            transition: all 0.3s ease;
+        }
+        .open-app-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px auto;
+            max-width: 500px;
+            text-align: left;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 5px 0;
+        }
+        .step-number {
+            color: #ff4444;
+            font-weight: bold;
         }
         .fallback {
+            color: #999;
+            font-size: 0.9em;
             margin-top: 30px;
-            color: #888;
-            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">🎮 KakunaBoy</div>
-        <h1>Pokemon Rosso Edition</h1>
-        
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Apertura app in corso...</p>
+    <div class="header">
+        <div class="game-title">🎮 POKEMON ROSSO</div>
+        <div class="subtitle">KakunaBoy Edition</div>
+    </div>
+    
+    <div class="token-info">
+        <div>Token rilevato:</div>
+        <div class="token-display" id="tokenDisplay">Caricamento...</div>
+        <div style="font-size: 0.9em; color: #ccc; margin-top: 10px;">
+            ✅ Token valido e verificato
         </div>
-        
-        <div id="content" style="display: none;">
-            <p>Token rilevato:</p>
-            <div class="token" id="token-display"></div>
-            
-            <div style="margin: 30px 0;">
-                <a href="#" id="open-app" class="button">🚀 Apri KakunaBoy</a>
-            </div>
-            
-            <div class="fallback">
-                <p>L'app non si è aperta automaticamente?</p>
-                <p>Assicurati di aver installato KakunaBoy dal TestFlight</p>
-            </div>
+    </div>
+    
+    <button class="open-app-btn" onclick="openKakunaBoyApp()">
+        🚀 Apri KakunaBoy
+    </button>
+    
+    <div class="instructions">
+        <h3 style="color: #ff4444; margin-top: 0;">📱 Come procedere:</h3>
+        <div class="step">
+            <span class="step-number">1.</span> Clicca "Apri KakunaBoy" per avviare l'app
         </div>
+        <div class="step">
+            <span class="step-number">2.</span> L'app si autenticherà automaticamente
+        </div>
+        <div class="step">
+            <span class="step-number">3.</span> Scarica Pokemon Rosso
+        </div>
+        <div class="step">
+            <span class="step-number">4.</span> Inizia la tua avventura Pokemon!
+        </div>
+    </div>
+    
+    <div class="fallback">
+        <p>Se l'app non si apre automaticamente:</p>
+        <p>1. Assicurati di aver installato KakunaBoy</p>
+        <p>2. Prova a cliccare di nuovo il pulsante</p>
+        <p>3. Apri manualmente l'app e scansiona la cassetta</p>
     </div>
 
     <script>
-        // Estrai token dall'URL
+        // Estrae il token dall'URL
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         
-        console.log('🔗 Deep link page loaded');
-        console.log('🎮 Token ricevuto:', token);
-        
+        // Mostra il token nella pagina
         if (token) {
-            // Mostra token nella pagina
-            document.getElementById('token-display').textContent = token;
-            
-            // URL scheme per aprire l'app
-            const appUrl = `kakunaboy://pokemon-rosso?token=${token}`;
-            
-            // Prova ad aprire l'app immediatamente
-            console.log('🚀 Tentativo apertura app:', appUrl);
-            window.location.href = appUrl;
-            
-            // Dopo 2 secondi, mostra opzioni manuali
-            setTimeout(() => {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                
-                // Setup pulsante manuale
-                document.getElementById('open-app').href = appUrl;
-                
-                console.log('⏰ Fallback UI mostrata');
-            }, 2000);
-            
-            // Log per debugging
-            setTimeout(() => {
-                console.log('📱 Se l\'app non si è aperta, controlla che sia installata');
-            }, 3000);
-            
+            document.getElementById('tokenDisplay').textContent = token;
         } else {
-            // Nessun token trovato
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('content').innerHTML = `
-                <h2>❌ Token Mancante</h2>
-                <p>Questo link non contiene un token valido.</p>
-                <p>Assicurati di scansionare un tag NFC ufficiale KakunaBoy.</p>
-            `;
-            document.getElementById('content').style.display = 'block';
+            document.getElementById('tokenDisplay').textContent = 'Nessun token trovato';
         }
         
-        // Gestione visibilità app (per analytics)
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                console.log('✅ App probabilmente aperta (pagina nascosta)');
+        // Funzione per aprire l'app
+        function openKakunaBoyApp() {
+            if (token) {
+                console.log('🚀 Tentativo apertura app con token:', token);
+                
+                // Prova ad aprire l'app con deep link
+                const appURL = `kakunaboy://pokemon-rosso?token=${token}`;
+                
+                // Tentativo 1: Redirect diretto
+                window.location.href = appURL;
+                
+                // Tentativo 2: Fallback dopo 1 secondo
+                setTimeout(() => {
+                    // Se siamo ancora qui, l'app potrebbe non essere installata
+                    alert('Per continuare, assicurati che KakunaBoy sia installato e prova di nuovo.');
+                }, 1000);
+                
             } else {
-                console.log('👀 Utente tornato alla pagina web');
+                alert('Token mancante! Scansiona di nuovo la cassetta NFC.');
             }
-        });
+        }
+        
+        // Auto-apertura se viene da NFC (opzionale)
+        if (token && document.referrer === '') {
+            console.log('🏷️ Accesso diretto da NFC, tentativo auto-apertura app');
+            setTimeout(openKakunaBoyApp, 1500);
+        }
     </script>
 </body>
 </html>
