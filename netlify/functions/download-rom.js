@@ -5,11 +5,17 @@ exports.handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Content-Type': 'application/json'
   };
 
+  // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
+    };
   }
 
   if (event.httpMethod !== 'GET') {
@@ -21,87 +27,91 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { token, device, expires, signature } = event.queryStringParameters || {};
-
-    if (!token || !device || !expires || !signature) {
+    const { token, device_id, expires, signature } = event.queryStringParameters;
+    
+    console.log(`📥 Richiesta download ROM per token: ${token}`);
+    
+    // Verifica parametri richiesti
+    if (!token || !device_id || !expires || !signature) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ 
-          error: 'Parametri mancanti',
-          message: 'Link di download non valido'
+        body: JSON.stringify({
+          success: false,
+          error: 'Parametri mancanti per il download'
         })
       };
     }
-
-    // Verifica firma
-    const data = `${token}:${device}:${expires}`;
-    const expectedSignature = crypto.createHmac('sha256', process.env.SECRET_KEY || 'fallback-secret')
-      .update(data)
-      .digest('hex');
-
-    if (signature !== expectedSignature) {
-      console.log('❌ Invalid signature for download:', { token, device });
-      return {
-        statusCode: 401,
-        headers,
-        body: JSON.stringify({ 
-          error: 'Firma non valida',
-          message: 'Link di download contraffatto o manomesso'
-        })
-      };
-    }
-
+    
     // Verifica scadenza
-    const now = Math.floor(Date.now() / 1000);
-    if (now > parseInt(expires)) {
-      console.log('❌ Expired download link:', { token, expires: new Date(parseInt(expires) * 1000) });
+    if (Date.now() > parseInt(expires)) {
+      console.log(`❌ Link scaduto per token: ${token}`);
       return {
         statusCode: 401,
         headers,
-        body: JSON.stringify({ 
-          error: 'Link scaduto',
-          message: 'Il link di download è scaduto. Richiedi un nuovo download.'
+        body: JSON.stringify({
+          success: false,
+          error: 'Link di download scaduto'
         })
       };
     }
-
-    // Log download autorizzato
-    console.log('✅ Authorized download:', { 
-      token: token, 
-      device: device, 
-      timestamp: new Date().toISOString(),
-      ip: event.headers['x-forwarded-for'] || 'unknown'
-    });
-
-    // Per ora redirect a ROM di esempio
-    // In produzione, servi il file ROM reale dal tuo storage
-    const romUrls = {
-      'POKEMON_ROSSO_001': 'https://example.com/roms/pokemon-red-v1.gb',
-      'POKEMON_ROSSO_002': 'https://example.com/roms/pokemon-red-v1.gb', 
-      'POKEMON_ROSSO_003': 'https://example.com/roms/pokemon-red-v1.gb'
+    
+    // Verifica firma
+    const secretKey = process.env.SECRET_KEY || 'default-secret-key';
+    const downloadData = {
+      token: token,
+      device_id: device_id,
+      expires: parseInt(expires),
+      game: 'pokemon_red'
     };
-
-    const romUrl = romUrls[token] || 'https://example.com/roms/pokemon-red-default.gb';
-
+    
+    const expectedSignature = crypto
+      .createHmac('sha256', secretKey)
+      .update(JSON.stringify(downloadData))
+      .digest('hex');
+    
+    if (signature !== expectedSignature) {
+      console.log(`❌ Firma non valida per token: ${token}`);
+      return {
+        statusCode: 401,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: 'Firma di download non valida'
+        })
+      };
+    }
+    
+    // Simulazione download ROM (in produzione caricheresti file reale)
+    const romData = {
+      name: 'Pokemon Rosso',
+      size: '1MB',
+      format: 'gb',
+      download_url: 'https://archive.org/download/nintendo-game-boy-rom-collection/Pokemon%20Red%20Version%20(USA%2C%20Europe).gb',
+      checksum: 'a1b2c3d4e5f6',
+      status: 'ready'
+    };
+    
+    console.log(`✅ Download autorizzato per token: ${token}`);
+    
     return {
-      statusCode: 302,
-      headers: {
-        ...headers,
-        'Location': romUrl,
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
-      },
-      body: ''
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: 'Download ROM autorizzato',
+        rom_data: romData
+      })
     };
-
+    
   } catch (error) {
-    console.error('❌ Download error:', error);
+    console.error('❌ Errore download ROM:', error);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ 
-        error: 'Errore del server',
-        message: 'Errore interno durante il download'
+      body: JSON.stringify({
+        success: false,
+        error: 'Errore interno del server'
       })
     };
   }
