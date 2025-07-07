@@ -1,16 +1,10 @@
 {
   "name": "kakunaboy-backend",
   "version": "1.0.0",
-  "description": "Backend per KakunaBoy Pokemon Rosso",
+  "description": "Backend per KakunaBoy NFC gaming system",
   "main": "index.js",
   "scripts": {
-    "dev": "netlify dev",
     "build": "echo 'Build complete'"
   },
-  "dependencies": {
-    "crypto": "^1.0.1"
-  },
-  "devDependencies": {
-    "netlify-cli": "^17.0.0"
-  }
+  "dependencies": {}
 }
