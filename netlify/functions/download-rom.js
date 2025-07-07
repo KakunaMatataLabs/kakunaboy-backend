@@ -1,12 +1,13 @@
 // netlify/functions/download-rom.js
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 exports.handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Content-Type': 'application/json'
   };
 
   // Handle CORS preflight
@@ -35,7 +36,7 @@ exports.handler = async (event, context) => {
     if (!token || !device_id || !expires || !signature) {
       return {
         statusCode: 400,
-        headers,
+        headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           success: false,
           error: 'Parametri mancanti per il download'
@@ -48,7 +49,7 @@ exports.handler = async (event, context) => {
       console.log(`❌ Link scaduto per token: ${token}`);
       return {
         statusCode: 401,
-        headers,
+        headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           success: false,
           error: 'Link di download scaduto'
@@ -74,7 +75,7 @@ exports.handler = async (event, context) => {
       console.log(`❌ Firma non valida per token: ${token}`);
       return {
         statusCode: 401,
-        headers,
+        headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           success: false,
           error: 'Firma di download non valida'
@@ -82,13 +83,67 @@ exports.handler = async (event, context) => {
       };
     }
     
-    // Simulazione download ROM (in produzione caricheresti file reale)
+    // Se richiesta è per download file ROM reale
+    if (event.queryStringParameters.file === 'rom') {
+      try {
+        // Path al file ROM nella cartella public/roms
+        const romPath = path.join(process.cwd(), 'public', 'roms', 'Pokemon Red.gb');
+        
+        // Controlla se il file esiste
+        if (!fs.existsSync(romPath)) {
+          console.log(`❌ File ROM non trovato: ${romPath}`);
+          return {
+            statusCode: 404,
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              success: false,
+              error: 'File ROM non trovato'
+            })
+          };
+        }
+        
+        // Leggi il file ROM
+        const romBuffer = fs.readFileSync(romPath);
+        
+        console.log(`✅ Download ROM autorizzato: ${romPath} (${romBuffer.length} bytes)`);
+        
+        // Restituisci il file ROM
+        return {
+          statusCode: 200,
+          headers: {
+            ...headers,
+            'Content-Type': 'application/octet-stream',
+            'Content-Disposition': 'attachment; filename="pokemon_red.gb"',
+            'Content-Length': romBuffer.length.toString()
+          },
+          body: romBuffer.toString('base64'),
+          isBase64Encoded: true
+        };
+        
+      } catch (error) {
+        console.error(`❌ Errore lettura ROM:`, error);
+        return {
+          statusCode: 500,
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            success: false,
+            error: 'Errore nella lettura del file ROM'
+          })
+        };
+      }
+    }
+    
+    // Altrimenti restituisci info per download
+    const siteUrl = `https://${event.headers.host}`;
+    const downloadUrl = `${siteUrl}/.netlify/functions/download-rom?token=${token}&device_id=${device_id}&expires=${expires}&signature=${signature}&file=rom`;
+    
     const romData = {
       name: 'Pokemon Rosso',
+      filename: 'Pokemon Red.gb',
       size: '1MB',
       format: 'gb',
-      download_url: 'https://archive.org/download/nintendo-game-boy-rom-collection/Pokemon%20Red%20Version%20(USA%2C%20Europe).gb',
-      checksum: 'a1b2c3d4e5f6',
+      download_url: downloadUrl,
+      checksum: 'authentic_pokemon_red_rom',
       status: 'ready'
     };
     
@@ -96,7 +151,7 @@ exports.handler = async (event, context) => {
     
     return {
       statusCode: 200,
-      headers,
+      headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         success: true,
         message: 'Download ROM autorizzato',
@@ -108,7 +163,7 @@ exports.handler = async (event, context) => {
     console.error('❌ Errore download ROM:', error);
     return {
       statusCode: 500,
-      headers,
+      headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         success: false,
         error: 'Errore interno del server'
