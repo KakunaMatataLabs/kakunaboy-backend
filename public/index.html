@@ -1,11 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>KakunaBoy Backend</title>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .logo {
+            font-size: 3em;
+            color: #9BBB58;
+            margin-bottom: 20px;
+        }
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        .test-link {
+            display: inline-block;
+            background: #9BBB58;
+            color: #000;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .test-link:hover {
+            background: #7a9642;
+        }
+    </style>
 </head>
 <body>
-    <h1>🎮 KakunaBoy Backend</h1>
-    <p>Backend attivo!</p>
-    <a href="/pokemon-rosso?token=POKEMON_ROSSO_001">Test Pokemon Rosso</a>
+    <div class="logo">🎮 KakunaBoy</div>
+    <div class="subtitle">Backend Gaming System</div>
+    <p>Sistema di autenticazione NFC per gaming retrò</p>
+    
+    <div style="margin-top: 40px;">
+        <a href="/pokemon-rosso?token=POKEMON_ROSSO_001" class="test-link">
+            Test Pokemon Rosso
+        </a>
+        <br>
+        <a href="/.netlify/functions/verify-nfc-token" class="test-link">
+            Test API Verifica
+        </a>
+    </div>
+    
+    <div style="margin-top: 40px; color: #666; font-size: 0.9em;">
+        <p>Status: ✅ Backend Attivo</p>
+        <p>Funzioni: NFC Authentication, ROM Download</p>
+    </div>
 </body>
 </html>
